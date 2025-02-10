@@ -23,13 +23,18 @@ include_once __DIR__.'/../../core.php';
 $prezzi_ivati = setting('Utilizza prezzi di vendita comprensivi di IVA');
 
 // Creazione righe fantasma
-$autofill = new Util\Autofill($options['pricing'] ? 6 : 3, 70);
-$rows_per_page = ($documento['note'] || $options['pricing'] ? ($tipo_doc == 'Ddt in uscita' ? 20 : 22) : 27);
+$autofill = new Util\Autofill($options['pricing'] ? 7 : 4, 70);
+$rows_per_page = ($documento['note'] || $options['pricing'] ? ($tipo_doc == 'Ddt in uscita' ? 22 : 24) : 27);
 $autofill->setRows($rows_per_page, 0, $options['last-page-footer'] ? 34 : $rows_per_page);
 
-// Conteggio righe destinazione diversa
-$autofill->count($destinazione);
-$autofill->count($partenza);
+// conteggio delle righe occupate dall'intestazione
+$c = 0;
+($f_sitoweb || $f_pec) ? ++$c : null;
+($replaces['c_indirizzo'] || $replaces['c_città_full'] || $replaces['c_telefono'] || $replaces['c_cellulare']) ? ++$c : null;
+($destinazione && $partenza) ? $c += 3 : (($destinazione || $partenza) ? ++$c : null);
+
+// Diminuisco le righe disponibili per pagina
+$autofill->setRows($rows_per_page - $c, 0, $rows_per_page - $c);
 
 // Intestazione tabella per righe
 echo "
@@ -37,6 +42,7 @@ echo "
     <thead>
         <tr>
             <th class='text-center' style='width:5%'>".tr('#', [], ['upper' => true])."</th>
+            <th class='text-center' style='width:15%'>".tr('Cod.', [], ['upper' => true])."</th>
             <th class='text-center'>".tr('Descrizione', [], ['upper' => true])."</th>
             <th class='text-center'>".tr('Q.tà', [], ['upper' => true]).'</th>';
 
@@ -105,7 +111,14 @@ foreach ($righe as $riga) {
                 if ($options['pricing']) {
                     $text .= '</td><td></td><td></td><td>';
                 }
-                $text .= '</td><td></td></tr><tr><td class="text-center" nowrap="nowrap" style="vertical-align: middle">';
+
+                if ($riga->isArticolo()) {
+                    echo '</td><td>'.$riga->codice.'</td>';
+                } else {
+                    $text .= '</td><td></td>';
+                }
+
+                $text .= '</tr><tr><td class="text-center" nowrap="nowrap" style="vertical-align: middle">';
 
                 echo '
                 </td>
@@ -122,13 +135,17 @@ foreach ($righe as $riga) {
     $autofill->count($r['descrizione']);
 
     echo $num.'
-        </td>
-        <td>'.nl2br((string) $r['descrizione']);
+        </td>';
 
     if ($riga->isArticolo()) {
-        echo '<br><small>'.$riga->codice.'</small>';
-        $autofill->count($riga->codice, true);
+        echo '<td class="text-center">'.$riga->codice.'</td>';
+    } else {
+        echo '<td>-</td>';
     }
+
+    echo'
+        <td>'.nl2br((string) $r['descrizione']);
+
 
     if ($riga->isArticolo()) {
         // Seriali

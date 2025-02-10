@@ -163,3 +163,65 @@ UPDATE `zz_prints` SET `options` = '{\"pricing\":false, \"show-only-total\":true
 -- Rimozione campo deprecato
 ALTER TABLE `mg_articoli` DROP `threshold_qta`;
 DELETE FROM `zz_views` WHERE `zz_views`.`name` = '_bg_' AND `id_module` = (SELECT `id` FROM `zz_modules` WHERE `name` = 'Articoli');
+
+-- Agginta sede partenza in preventivi
+ALTER TABLE `co_preventivi` CHANGE `idsede` `idsede_destinazione` INT NOT NULL; 
+ALTER TABLE `co_preventivi` ADD `idsede_partenza` INT NOT NULL AFTER `idsede_destinazione`; 
+
+-- Agginta sede partenza in contratti
+ALTER TABLE `co_contratti` CHANGE `idsede` `idsede_destinazione` INT NOT NULL; 
+ALTER TABLE `co_contratti` ADD `idsede_partenza` INT NOT NULL AFTER `idsede_destinazione`;
+
+-- Agginta sede partenza in ordini
+ALTER TABLE `or_ordini` CHANGE `idsede` `idsede_destinazione` INT NOT NULL; 
+ALTER TABLE `or_ordini` ADD `idsede_partenza` INT NOT NULL AFTER `idsede_destinazione`; 
+
+-- Aggiunta colonna Note interne in Fatture di vendita
+SELECT @id_module := `id` FROM `zz_modules` WHERE `name` = 'Fatture di vendita';
+INSERT INTO `zz_views` (`id_module`, `name`, `query`, `order`, `search`, `slow`, `format`, `html_format`, `search_inside`, `order_by`, `visible`, `summable`, `default`) VALUES 
+(@id_module, 'Note interne', "`co_documenti`.`note_aggiuntive`", '23', '1', '0', '0', '0', '', '', '0', '0', '0');
+
+SELECT @id_module := `id` FROM `zz_modules` WHERE `name` = 'Fatture di vendita';
+INSERT INTO `zz_views_lang` (`id_lang`, `id_record`, `title`) VALUES
+(1, (SELECT `id` FROM `zz_views` WHERE `name` = 'Note interne' AND `id_module` = @id_module), 'Note interne'),
+(2, (SELECT `id` FROM `zz_views` WHERE `name` = 'Note interne' AND `id_module` = @id_module), 'Notes');
+
+-- Aggiunta colonna Note interne in DDT in entrata
+SELECT @id_module := `id` FROM `zz_modules` WHERE `name` = 'Ddt in entrata';
+INSERT INTO `zz_views` (`id_module`, `name`, `query`, `order`, `search`, `slow`, `format`, `html_format`, `search_inside`, `order_by`, `visible`, `summable`, `default`) VALUES 
+(@id_module, 'Note interne', "`dt_ddt`.`note_aggiuntive`", '17', '1', '0', '0', '0', '', '', '0', '0', '0');
+
+SELECT @id_module := `id` FROM `zz_modules` WHERE `name` = 'Ddt in entrata';
+INSERT INTO `zz_views_lang` (`id_lang`, `id_record`, `title`) VALUES
+(1, (SELECT `id` FROM `zz_views` WHERE `name` = 'Note interne' AND `id_module` = @id_module), 'Note interne'),
+(2, (SELECT `id` FROM `zz_views` WHERE `name` = 'Note interne' AND `id_module` = @id_module), 'Notes');
+
+-- Aggiunta colonna Note interne in DDT in uscita
+SELECT @id_module := `id` FROM `zz_modules` WHERE `name` = 'Ddt in uscita';
+INSERT INTO `zz_views` (`id_module`, `name`, `query`, `order`, `search`, `slow`, `format`, `html_format`, `search_inside`, `order_by`, `visible`, `summable`, `default`) VALUES 
+(@id_module, 'Note interne', "`dt_ddt`.`note_aggiuntive`", '19', '1', '0', '0', '0', '', '', '0', '0', '0');
+
+SELECT @id_module := `id` FROM `zz_modules` WHERE `name` = 'Ddt in uscita';
+INSERT INTO `zz_views_lang` (`id_lang`, `id_record`, `title`) VALUES
+(1, (SELECT `id` FROM `zz_views` WHERE `name` = 'Note interne' AND `id_module` = @id_module), 'Note interne'),
+(2, (SELECT `id` FROM `zz_views` WHERE `name` = 'Note interne' AND `id_module` = @id_module), 'Notes');
+
+-- Aggiunta colonna Note interne in Ordini fornitore
+SELECT @id_module := `id` FROM `zz_modules` WHERE `name` = 'Ordini fornitore';
+INSERT INTO `zz_views` (`id_module`, `name`, `query`, `order`, `search`, `slow`, `format`, `html_format`, `search_inside`, `order_by`, `visible`, `summable`, `default`) VALUES 
+(@id_module, 'Note interne', "`or_ordini`.`note_aggiuntive`", '15', '1', '0', '0', '0', '', '', '0', '0', '0');
+
+SELECT @id_module := `id` FROM `zz_modules` WHERE `name` = 'Ordini fornitore';
+INSERT INTO `zz_views_lang` (`id_lang`, `id_record`, `title`) VALUES
+(1, (SELECT `id` FROM `zz_views` WHERE `name` = 'Note interne' AND `id_module` = @id_module), 'Note interne'),
+(2, (SELECT `id` FROM `zz_views` WHERE `name` = 'Note interne' AND `id_module` = @id_module), 'Notes');
+
+-- Aggiunta colonna Note interne in Ordini cliente
+SELECT @id_module := `id` FROM `zz_modules` WHERE `name` = 'Ordini cliente';
+INSERT INTO `zz_views` (`id_module`, `name`, `query`, `order`, `search`, `slow`, `format`, `html_format`, `search_inside`, `order_by`, `visible`, `summable`, `default`) VALUES 
+(@id_module, 'Note interne', "`or_ordini`.`note_aggiuntive`", '17', '1', '0', '0', '0', '', '', '0', '0', '0');
+
+SELECT @id_module := `id` FROM `zz_modules` WHERE `name` = 'Ordini cliente';
+INSERT INTO `zz_views_lang` (`id_lang`, `id_record`, `title`) VALUES
+(1, (SELECT `id` FROM `zz_views` WHERE `name` = 'Note interne' AND `id_module` = @id_module), 'Note interne'),
+(2, (SELECT `id` FROM `zz_views` WHERE `name` = 'Note interne' AND `id_module` = @id_module), 'Notes');

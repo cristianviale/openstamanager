@@ -749,9 +749,10 @@ switch ($op) {
         $documento = $class::find($id_documento);
 
         // Individuazione sede
-        $id_sede = ($documento->direzione == 'entrata') ? $documento->idsede_destinazione : $documento->idsede_partenza;
-        $id_sede = $id_sede ?: $documento->idsede;
-        $id_sede = $id_sede ?: 0;
+        $idsede_partenza = ($documento->direzione == 'entrata') ? $documento->idsede_partenza : $documento->idsede_destinazione;
+        $idsede_partenza = $idsede_partenza ?: 0;
+        $idsede_destinazione = ($documento->direzione == 'entrata') ? $documento->idsede_destinazione : $documento->idsede_partenza;
+        $idsede_destinazione = $idsede_destinazione ?: 0;
 
         // Creazione della fattura al volo
         if (post('create_document') == 'on') {
@@ -765,9 +766,8 @@ switch ($op) {
                 $fattura->idpagamento = setting('Tipo di pagamento predefinito');
             }
 
-            $idsede = ($documento->idsede_destinazione ?: $documento->idsede);
-
-            $fattura->idsede_destinazione = $idsede;
+            $fattura->idsede_partenza = $idsede_partenza;
+            $fattura->idsede_destinazione = $idsede_destinazione;
             $fattura->id_ritenuta_contributi = post('id_ritenuta_contributi') ?: null;
             $fattura->idreferente = $documento->idreferente;
             $fattura->idagente = $documento->idagente ?: '';
@@ -791,7 +791,7 @@ switch ($op) {
         $id_rivalsa_inps = post('id_rivalsa_inps') ?: null;
         $id_conto = post('id_conto');
 
-        if ($class == 'Modules\Interventi\Intervento') {
+        if ($class == Modules\Interventi\Intervento::class) {
             $riga = Descrizione::build($fattura);
             $riga->descrizione = post('descrizione_intervento');
             $riga->idintervento = $documento->id;
@@ -1057,8 +1057,8 @@ switch ($op) {
 
                 $provvigione = $dbo->selectOne('an_anagrafiche', 'provvigione_default', ['idanagrafica' => $fattura->idagente])['provvigione_default'];
 
-                $articolo->id_rivalsa_inps = setting('Cassa previdenziale predefinita')?: '';
-                $articolo->id_ritenuta_acconto = setting('Ritenuta d\'acconto predefinita')?: '';
+                $articolo->id_rivalsa_inps = setting('Cassa previdenziale predefinita') ?: '';
+                $articolo->id_ritenuta_acconto = setting('Ritenuta d\'acconto predefinita') ?: '';
                 $articolo->setPrezzoUnitario($prezzo_unitario, $id_iva);
                 $articolo->setSconto($sconto, 'PRC');
                 $articolo->setProvvigione($provvigione ?: 0, 'PRC');

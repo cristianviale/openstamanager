@@ -66,10 +66,16 @@ if ($has_image) {
 
 // Creazione righe fantasma
 $autofill = new Util\Autofill($columns);
-$autofill->setRows(22, 0, 36);
+$rows_per_page = 22;
+$rows_first_page = 36;
+$autofill->setRows($rows_per_page, 0, $rows_first_page);
 
-// Conteggio righe destinazione diversa
-$autofill->count($destinazione);
+// Conto le righe da diminuire
+$c = 0;
+$destinazione ? $c += 2 : null;
+
+// Diminuisco le righe disponibili per pagina
+$autofill->setRows($rows_per_page - $c, 0, $rows_first_page - $c);
 
 // Descrizione
 if (!empty($documento['descrizione'])) {
@@ -198,7 +204,6 @@ foreach ($righe as $key => $riga) {
 
                     echo '
                     <br><small class="text-muted">'.$text.'</small>';
-                    $autofill->count($text, true);
                 }
 
                 echo '
@@ -238,7 +243,7 @@ foreach ($righe as $key => $riga) {
     $autofill->next();
 
     $next = $righe->flatten()[$num];
-    
+
     if ($has_gruppo && ($next->is_titolo || $next == null) && ($options['pricing'] || $options['show-only-total'])) {
         echo '
         <tr>
@@ -268,8 +273,7 @@ foreach ($righe as $key => $riga) {
             </td>
         </tr>';
         }
-        $autofill->next();
-        $autofill->next();
+        $autofill->set(3);
         $autofill->next();
     }
 }
